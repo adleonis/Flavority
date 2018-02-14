@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='style.css') }}">
+    <title>Flavority</title></head>
+    <body>
+        <div id="s1">
+            <h1>Flavority</h1>
+                    <h2>Top {{message}} Social Media Celebs by Followers</h2>
+                    <table>
+                        <tr>
+                            <th> Photo </th>
+                            <th> First Name </th>
+                            <th> Last Name </th>
+                            <th> Followers </th>
+                            <th> Posts </th>
+                            <th> Following </th>
+                        </tr>
+                        {% for values in data: %}
+                        <div class="thing">
+                        <tr>
+                            <td><img src={{ values[5] }} style="width:100px;height:100px;"></td>
+                            <td>{{ values[0] }}</td>
+                            <td>{{ values[1] }}</td>
+                            <td>{{ values[2] }}</td>
+                            <td>{{ values[3] }}</td>
+                            <td>{{ values[4] }}</td>
+                        </tr>
+                        </div>
+                        {% endfor %}
+                    </table>
+
+
+        </div>
+    </body>
+</html>
