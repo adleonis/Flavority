@@ -1,0 +1,58 @@
+{% extends "bootstrap/base.html"  %}
+
+{% block content%}
+    <div class="card" style="width: 18rem;">
+      <img class="card-img-top" src="{{posts_data[0][7]}}" alt="Card image cap">
+      <div class="card-body">
+        <h5 class="card-title">{{posts_data[0][3]}}</h5>
+        <p class="card-text">{{posts_data[0][6]}}</p>
+        <a href="#" class="btn btn-primary">BUY SELL</a>
+      </div>
+    </div>
+    
+    <!--
+        <div id="s1">
+            <h1>Flavority</h1>
+                    <h2>Details for {{celeb_data[0]}} {{celeb_data[1]}}</h2>
+                    <img src={{ celeb_data[5] }} style="width:300px;height:300px;">
+                    
+                    <table>
+                    <tr>
+                    <td>Followers </td> <td>{{celeb_data[2]}} </td>
+                    </tr>
+                    <tr>
+                    <td>Posts </td> <td>{{celeb_data[3]}} </td>
+                    </tr>
+                    <tr>
+                    <td>Following </td> <td>{{celeb_data[4]}} </td>
+                    </tr>
+                    </table>
+                    <table>
+                        <tr>
+                            <th> Photo </th>
+                            <th> Caption </th>
+                            <th> Date </th>
+                            <th> Likes </th>
+                            <th> Comments </th>
+                            <th> Updated On </th>
+                        </tr>
+                        {% for values in posts_data: %}
+                        <div class="thing">
+                        <tr>
+                        <form action="/details" method="post">
+                            <td><img src={{ values[7] }} style="width:100px;height:100px;"></td>
+                            <td>{{ values[6] }}</td>
+                            <td>{{ values[3] }}</td>
+                            <td>{{ values[4] }}</td>
+                            <td>{{ values[5] }}</td>
+                            <td>{{ values[-1] }}</td>
+                        </form>
+                        </tr>
+                        </div>
+                        {% endfor %}
+                    </table>
+
+
+        </div>
+      -->
+{% endblock %}

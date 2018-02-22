@@ -1,0 +1,63 @@
+{% extends "bootstrap/base.html"  %}
+{% block body %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm">
+    </div>
+    <div class="col-sm">
+    <h1 class="display-1">Flavority</h1>
+    <p class="h2"> {{celeb_data[0]}}{{celeb_data[1]}} Details</p>
+    </div>
+    <div class="col-sm">
+    </div>
+  </div>
+</div>
+
+<canvas id="myChart" width="400" height="400"></canvas>
+
+
+
+<div class="container">
+    {% for values in posts_data: %}
+    {% if loop.cycle('1','2','3','4','5') == '1': %}
+    <div class="row">
+    {% endif %}
+    <div class="col-sm-2">
+    <div class="card" style="width: 18rem;">
+          <a href="{{values[7]}}"><img class="img-thumbnail" src="{{ values[7]}}" alt="Card image cap"></a>
+          <div class="card-body">
+            <h5 class="card-title">{{values[3] | ctime }}</h5>
+            <p class="card-text">Caption:{{values[6]}}</p>
+            <p class="card-text">Likes:{{values[4]}}</p>
+            <p class="card-text">Comments:{{values[5]}}</p>
+            <p class="card-text"><small class="text-muted">Last updated: {{values[-1] }}</small></p>
+          </div>
+    </div>
+    </div>
+    {% if loop.cycle('1','2','3','4','5') == '5': %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

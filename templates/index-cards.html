@@ -1,0 +1,67 @@
+{% extends "bootstrap/base.html"  %}
+{% block body %}
+
+<div class="container">
+  <div class="row align-items-end">
+    <div class="col-sm-4">
+        <h1 class="display-1">Flavority</h1>
+        <p class="h2">Top {{message}} Social Media Celebs by Followers</p>
+        </div>
+    <div class="col-md-auto"> 
+    <h1> --- </h1>
+    <form class="form-inline" action="/" method="post">
+      <div class="form-group mb-2">
+        <label for="staticEmail2" class="sr-only">Email</label>
+        <input type="text" readonly class="form-control-plaintext" id="staticEmail2" value="http://instagram.com/">
+      </div>
+      <div class="form-group mx-sm-3 mb-2">
+        <label for="searchinput" class="sr-only">Search Input</label>
+        <input type="text" name="searchfirstname" class="form-control" id="searchfirstname" placeholder="Firstname">
+        <input type="text" name="searchlastname" class="form-control" id="searchlastname" placeholder="Lastname">
+      </div>
+      <button type="submit" class="btn btn-primary mb-2">Search</button>
+    </form>
+    </div>
+  </div>
+  
+
+  <div class="row justify-content-center">
+    {% for values in data: %}
+    {% if loop.cycle('1','2','3','4','5') == '1': %}
+    <div class="row justify-content-center">
+    {% endif %}
+    <div class="col-sm-2">
+    <div class="card" style="width: 18rem;">
+          <a href="/{{values[0]}}"><img class="card-img-top img-thumbnail" src="{{ values[-1]}}" alt="Card image cap"></a>
+          <div class="card-body">
+            <h5 class="card-title">{{loop.index}} {{values[2]}} {{values[3]}}</h5>
+            <p class="card-text">Followers:{{values[4]}}</p>
+            <p class="card-text"><small class="text-muted">Last updated: {{values[5]}}</small></p>
+          </div>
+    </div>
+    </div>
+    {% if loop.cycle('1','2','3','4','5') == '5': %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

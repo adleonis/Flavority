@@ -15,16 +15,20 @@
                             <th> Followers </th>
                             <th> Posts </th>
                             <th> Following </th>
+                            <th> Link </th>
                         </tr>
                         {% for values in data: %}
                         <div class="thing">
                         <tr>
-                            <td><img src={{ values[5] }} style="width:100px;height:100px;"></td>
-                            <td>{{ values[0] }}</td>
-                            <td>{{ values[1] }}</td>
+                        <form action="/details" method="post">
+                            <td><img src={{ values[-1] }} style="width:100px;height:100px;"></td>
                             <td>{{ values[2] }}</td>
                             <td>{{ values[3] }}</td>
                             <td>{{ values[4] }}</td>
+                            <td>{{ values[5] }}</td>
+                            <td>{{ values[6] }}</td>
+                            <td><input name="submit" type="submit" value="{{values[0]}}" placeholder="See Details"</td>
+                        </form>
                         </tr>
                         </div>
                         {% endfor %}

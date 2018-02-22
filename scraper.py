@@ -111,10 +111,10 @@ def get_instagram_data3(url):
     Returns [posts, followers, following, photo_url(HD),verifiedstatus] if eve$
     Return False if something failed
     '''
-    time.sleep(0.25)  #try and increase until they ban IP
+    time.sleep(0.20)  #try and increase until they ban IP
                       #banned @ 0.05
-    #try:
-    if True:
+    try:
+    #if True:
         ### GET user info totals
         output = requests.get(url).text
         soup = BeautifulSoup(output, 'html.parser')
@@ -145,14 +145,60 @@ def get_instagram_data3(url):
                 
 
         posts_dict = {}
-        for i in range(len(post_codes)):
-            posts_dict[post_codes[i]] = [post_dates[i],post_likes[i],post_comments[i],post_caption[i],post_imgs[i],time.time()]
+        if len(post_codes) > 0:
+            for i in range(len(post_codes)):
+                try:
+                    posts_dict[post_codes[i]] = [post_dates[i],post_likes[i],post_comments[i],post_caption[i],post_imgs[i],time.time()]
+                except:
+                    pass
 
 
         return [int(posts), followers, int(following), photo, status,insta_user_id],posts_dict
-    #except:
-    #    return False
+    except:
+        return False,False
 
+
+
+def get_twitter_data(url):
+    ''' 
+    Gets TWITTER data from a name-based URL
+    Returns [posts, followers, following, photo_url(HD),verifiedstatus] if eve$
+    Return False if something failed
+    '''
+    time.sleep(0.20)  #try and increase until they ban IP
+    try:
+    #if True:
+        ### GET user info totals
+        output = requests.get(url).text
+        soup = BeautifulSoup(output, 'html.parser')
+        photo_url = re.findall(r'class="ProfileAvatar-image " src="(.*?)"',str(soup.find_all('img')))[0]
+        profile_link = re.findall(r'href="(.*?)"',str(soup.find_all(class_="ProfileCardMini-screenname")))
+
+        dataline = str(soup.find(class_="ProfileNav"))
+
+        twitter_id = re.findall(r'data-user-id="(.*?)"',dataline)[0]
+        metrics = re.findall(r'data-count=(.*?) data-is-compact=',dataline)
+        followers = metrics[2][1:-1]
+        tweets = metrics[0][1:-1]
+        following = metrics[1][1:-1]
+        likes = metrics[3][1:-1]
+
+        account = str(soup.find(class_="ProfileHeaderCard-name"))
+        status_text = str(re.findall(r'span class="Icon Icon(.*?)"',account))
+        if status_text.find('hidden') == '-1':
+            status = 'u'
+        else:
+            status = 'v'
+
+        created_on_text = str(soup.find(class_="ProfileHeaderCard-joinDateText js-tooltip u-dir"))
+        created_on = str(re.findall(r'title="(.*?)"',created_on_text)[0])
+
+        outside_link_text = str(soup.find(class_="ProfileHeaderCard-urlText u-dir"))
+        outside_link = str(re.findall(r'title="(.*?)"',outside_link_text)[0])
+
+        return [int(tweets),int(followers), int(following), int(likes), photo_url, status,twitter_id,created_on,outside_link]
+    except:
+        return False
 
 
 
@@ -187,6 +233,7 @@ if __name__ == '__main__':
     #keyword = 'List_of_Harper%27s_Bazaar_US_cover_models'
     #print(get_wikipedia_names(keyword))
     #out = get_instagram_data2('https://www.instagram.com/ZooeyDeschanel')
-    out = get_instagram_data3('https://www.instagram.com/EmilyDeschanel')
+    #out = get_instagram_data3('https://www.instagram.com/EmilyDeschanel')
+    out = get_twitter_data('https://www.twitter.com/MileyCyrus')
     print(out)
     #pass

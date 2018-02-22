@@ -1,0 +1,35 @@
+{% extends "bootstrap/base.html"  %}
+
+{% block content%}
+
+                    <h1 class="display-1">Flavority</h1>
+                    <p class="h2">Top {{message}} Social Media Celebs by Followers</p>
+                    <table class="table table-striped">
+                        <thead>
+                            <th scope="col"> Photo </th>
+                            <th scope="col"> First Name </th>
+                            <th scope="col"> Last Name </th>
+                            <th scope="col"> Followers </th>
+                            <th scope="col"> Posts </th>
+                            <th scope="col"> Following </th>
+                            <th scope="col"> Link </th>
+                        </thead>
+                        <tbody>
+                        {% for values in data: %}
+                        <tr>
+                        <form action="/details" method="post">
+                            <th scope="row">1</th>
+                            <td><img src={{ values[-1] }} style="width:100px;height:100px;"></td>
+                            <td>{{ values[2] }}</td>
+                            <td>{{ values[3] }}</td>
+                            <td>{{ values[4] }}</td>
+                            <td>{{ values[5] }}</td>
+                            <td>{{ values[6] }}</td>
+                            <td><input name="submit" type="submit" value="{{values[0]}}" placeholder="See Details"</td>
+                        </form>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+
+{% endblock %}

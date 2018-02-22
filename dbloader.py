@@ -130,20 +130,17 @@ def insert_instagram_info2(start,end):
     (c,conn) = orm.do_connect()
     for i in range(start,end):
         data = []
-        #print('i:',i)
         out = orm.select_celeb_data_by_id(c,[i])
-        #print('out:',out)
         if out != False:   #ID exists in celeb table
             #check if celeb already has been scraped
             temp = orm.get_instagram_data(c,[i])
-            #print('temp:',temp)
             if temp == False:  #Celeb never been scraped
                 url = 'https://www.instagram.com/{}{}'.format(out[1],out[2])
                 (scrape_result,posts_result) = scraper.get_instagram_data3(url)
                 status = 'u'
 
                 if scrape_result != False:     #If scraping worked
-                    if scrape_result[-1] == 'true':  #if instagram marked as VERIFIED
+                    if scrape_result[-2] == 'true':  #if instagram marked as VERIFIED
                         status = 'v'
                     data.append(i)
                     data.append(url)
@@ -176,7 +173,7 @@ def insert_instagram_info2(start,end):
             else:                       #already scraped, update fields
                 updata = []
                 url = 'https://www.instagram.com/{}{}'.format(out[1],out[2])
-                (scrape_result,posts_results) = scraper.get_instagram_data3(url)
+                scrape_result,posts_results = scraper.get_instagram_data3(url)
                 status = 'u'
                 if scrape_result != False:     #If scraping worked
                     if scrape_result[-1] == 'true':  #if instagram marked as VERIFIED
@@ -187,10 +184,10 @@ def insert_instagram_info2(start,end):
                     updata.append(scrape_result[2])
                     updata.append(scrape_result[3])
                     updata.append(time.time())
-                    updata.append(scrape_result[4])
+                    updata.append(str(scrape_result[5]))
                     updata.append(temp[0]) #instagram row ID
-                    instagram_id = orm.update_instagram_data(c,updata)  #insert into DB
-                    orm.insert_instagram_posts_data(c,instagram_id,posts_results)
+                    passfail = orm.update_instagram_data(c,updata)  #insert into DB
+                    orm.insert_instagram_posts_data(c,updata[-1],posts_results)
                     conn.commit()
                     upcounter += 1
                     print('>> DBloader >> Updated Instagram info for',out[1],out[2])
@@ -202,10 +199,99 @@ def insert_instagram_info2(start,end):
     return counter, upcounter
 
 
+def get_and_insert_instagram_info_by_id(c,conn,data):
+    ''' 
+    Takes a list of celebs and their data, scrapes instagram to update, and saves to DB
+    Data should be the output of orm.select_top_celeb_by_followers() or similar output
+    '''
+    upcounter = 0
+    reset_counter = 0
+    for line in data:
+        updata = []
+        url = 'https://www.instagram.com/{}{}'.format(line[2],line[3])
+        scrape_result,posts_results = scraper.get_instagram_data3(url)
+        status = 'u'
+        if scrape_result != False:     #If scraping worked
+            if scrape_result[-2] == 'true':  #if instagram marked as VERIFIED
+                status = 'v'                    
+            updata.append(url)
+            updata.append(status)
+            updata.append(scrape_result[0])
+            updata.append(scrape_result[1])
+            updata.append(scrape_result[2])
+            updata.append(scrape_result[3])
+            updata.append(time.time())
+            updata.append(str(scrape_result[5]))
+            updata.append(line[0]) #instagram row ID
+            passfail = orm.update_all_instagram_data(c,updata)  #insert into DB
+            orm.insert_instagram_posts_data(c,updata[-1],posts_results)
+            conn.commit()
+            upcounter += 1
+            print('>> DBloader >> Updated Instagram info for',line[2],line[3], 'ID:',line[0])
+        else:                        #If scraping failed
+            orm.reset_instagram_stats_by_id(c,line[0])
+            reset_counter += 1
+    return upcounter, reset_counter
+
+
+def update_instagram_slice(from_celeb_rank,to_celeb_rank):
+    ''' 
+    Updates the instagram info from the top of the list down ranked by # followers
+    Ex: to update the top 50 celebs, (0,49)
+        to update the next 50, (50,100)
+    '''
+    (c,conn) = orm.do_connect()
+    data = orm.select_top_celeb_by_followers(c, [to_celeb_rank])
+    out = get_and_insert_instagram_info_by_id(c,conn,data[from_celeb_rank:])
+    orm.dis_connect([c,conn])
+    print('Celebs updated:',out[0], 'Celebs reset:',out[1])
 
 
 
 
+
+def get_and_insert_twitter_info_by_id(c,conn,data):
+    ''' 
+    Takes a list of celebs and their data, scrapes twitter to update, and saves to DB
+    Data should be the output of orm.select_top_celeb_by_followers() or similar output
+    '''
+    upcounter = 0
+    reset_counter = 0
+    for line in data:
+        updata = []
+        url = 'https://www.twitter.com/{}{}'.format(line[2],line[3])
+        scrape_result = scraper.get_twitter_data(url)
+        if scrape_result != False:     #If scraping worked
+            updata.append(line[0])
+            updata.append(url)
+            updata.append(scrape_result[5])
+            updata.append(scrape_result[0])
+            updata.append(scrape_result[1])
+            updata.append(scrape_result[2])
+            updata.append(scrape_result[3])
+            updata.append(scrape_result[4])
+            updata.append(time.time())
+            passfail = orm.insert_twitter_data(c,updata)  #insert into DB
+            conn.commit()
+            upcounter += 1
+            print('>> DBloader >> Inserted TWITTER info for',line[2],line[3], 'ID:',line[0])
+        else:                        #If scraping failed
+            #orm.reset_instagram_stats_by_id(c,line[0])
+            reset_counter += 1
+    return upcounter, reset_counter
+
+
+def insert_twitter_slice(from_celeb_rank,to_celeb_rank):
+    ''' 
+    Updates the instagram info from the top of the list down ranked by # followers
+    Ex: to update the top 50 celebs, (0,49)
+        to update the next 50, (50,100)
+    '''
+    (c,conn) = orm.do_connect()
+    data = orm.select_top_celeb_by_followers(c, [to_celeb_rank])
+    out = get_and_insert_twitter_info_by_id(c,conn,data[from_celeb_rank:])
+    orm.dis_connect([c,conn])
+    print('Celebs updated:',out[0], 'Celebs reset:',out[1])
 
 
 
@@ -214,6 +300,7 @@ def insert_instagram_info2(start,end):
 
 
 if __name__ == "__main__":
+
     
     
     #input = ['List_of_American_film_actresses','List_of_American_television_actresses']
@@ -284,6 +371,10 @@ if __name__ == "__main__":
 
     #load_wikipedia_names(inputs)
     
-    c = insert_instagram_info2(418,420)
-    #c = insert_instagram_info(960,5295)
-    print(c)
+    #b = insert_instagram_info2(10000,34237)
+    #b = insert_instagram_info(960,5295)
+    #print(b)
+
+    #
+    update_instagram_slice(0,1000)
+    #insert_twitter_slice(1001,30000)

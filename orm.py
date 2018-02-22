@@ -69,10 +69,32 @@ def insert_celeb_data(c, data):
             ?);''', data)
 
         created_id = c.execute('SELECT MAX(id) FROM celeb;').fetchall()[0][0]
+        print(">> DB.CELEB >> new row inserted >> ID:",created_id)         
         return created_id
     except:
         return False
 
+def reset_instagram_stats_by_id(c, id):
+    ''' 
+    Reset everything but the celeb ID
+    '''
+    try:
+    #if True:
+        c.execute('''UPDATE instagram SET
+            url='',
+            status='u',
+            posts=0,
+            followers=0,
+            following=0,
+            photo_url='',
+            lastupdate=?,
+            insta_id=''
+            WHERE celeb_id=?;''',[time.time(),id])
+
+        print(">> DB.INSTAGRAM >> row reset >> CELEB ID:",id)
+        return True
+    except:
+        return False
 
 
 def select_celeb_data_by_id(c, id):
@@ -87,6 +109,23 @@ def select_celeb_data_by_id(c, id):
         return data
     except:
         return False
+
+
+
+def select_celeb_data_by_name(c, firstname,lastname):
+    ''' 
+    Search for CELEB BY matching name
+    data=[id,firstname,lastname,created_on,source,lastupdate,status]
+    RETURNS data if found, else return False
+    '''
+    try:
+        data = c.execute('''SELECT * FROM
+                         celeb WHERE firstname=? AND lastname=?;''', [firstname,lastname]).fetchall()[0]
+        return data
+    except:
+        return False
+
+
 
 
 def get_instagram_data(c,celeb_id):
@@ -136,21 +175,49 @@ def update_instagram_data(c,data):
     '''
     #print('DATAIN:',data)
     try:
-        print(data)
-        c.execute('''UPDATE instagram SET
-            status=?,
+    #if True:
+        c.execute('''UPDATE instagram SET            status=?,
             posts=?,
             followers=?,
             following=?,
             photo_url=?,
             lastupdate=?,
-            insta_id
+            insta_id=?
             WHERE celeb_id=?;''',data)
 
         print(">> DB.INSTAGRAM >> row updated >> CELEB ID:",data[-1])
         return True
     except:
         return False
+
+
+
+def update_all_instagram_data(c,data):
+    ''' 
+    Updates ALL instagram info for a specified user ID
+    data = [url,status,posts,followers,following,photo_url,lastupdate, celeb_id]
+    id is primary key from celeb table
+    '''
+    #print('DATAIN:',data)
+    try:
+    #if True:b
+        c.execute('''UPDATE instagram SET
+            url=?,
+            status=?,
+            posts=?,
+            followers=?,
+            following=?,
+            photo_url=?,
+            lastupdate=?,
+            insta_id=?
+            WHERE celeb_id=?;''',data)
+
+        print(">> DB.INSTAGRAM >> row updated >> CELEB ID:",data[-1])
+        return True
+    except:
+        return False
+
+
 
 
 def select_top_celeb_by_followers(c, num):
@@ -160,15 +227,54 @@ def select_top_celeb_by_followers(c, num):
     RETURNS data if correct, else return False
     '''
     try:
-        data = c.execute('''SELECT  firstname,
+        data = c.execute('''SELECT  celeb.id,
+                                    instagram.id,
+                                    firstname,
                                     lastname,
                                     instagram.followers,
                                     instagram.posts,
                                     instagram.following,
-                                    instagram.photo_url
-                            FROM celeb JOIN instagram ON 
+                                    instagram.photo_url,
+                                    instagram.lastupdate
+                            FROM celeb JOIN instagram ON
                                     celeb.id=instagram.celeb_id
                             ORDER BY instagram.followers DESC LIMIT ?;''', num).fetchall()
+        return data
+    except:
+        return False
+
+
+
+def select_top_celeb_by_followers2(c, num):
+    ''' 
+    SELECT CELEBS with most Followers INSTAGRAM+TWITTER
+    data=[id,firstname,lastname,created_on,source,lastupdate,status]
+    RETURNS data if correct, else return False
+    '''
+    try:
+        data = c.execute('''SELECT  celeb.id,
+                                    firstname,
+                                    lastname,
+                                    instagram.id,
+                                    instagram.followers,
+                                    instagram.posts,
+                                    instagram.following,
+                                    instagram.photo_url,
+                                    instagram.lastupdate,
+                                    twitter.id,
+                                    twitter.followers,
+                                    twitter.tweets,
+                                    twitter.following,
+                                    twitter.likes,
+                                    twitter.photo_url,
+                                    twitter.lastupdate,
+                                    instagram.followers+twitter.followers
+                            FROM celeb JOIN instagram ON
+                                    celeb.id=instagram.celeb_id
+                                       JOIN twitter ON
+                                    celeb.id=twitter.celeb_id
+                            GROUP BY celeb.id
+                            ORDER BY (instagram.followers + twitter.followers) DESC LIMIT ?;''', num).fetchall()
         return data
     except:
         return False
@@ -180,7 +286,9 @@ def insert_instagram_posts_data(c,instagram_id,data):
     Inserts instagram post info for a specified instagram ID
     '''
     try:
-        for key,values in data:
+    #if True:
+        for key,values in data.items():
+            #print(key, values)
             c.execute(
             '''INSERT INTO instagram_posts(
             instagram_id,
@@ -192,9 +300,9 @@ def insert_instagram_posts_data(c,instagram_id,data):
             post_img_url,
             lastupdate)
             VALUES(
-            ?,?,?,?,?,?,?,?);''', instagram_id, key,int(values[0]),int(values[1]),int(values[2]),values[3],values[4],int(values[5]))
+            ?,?,?,?,?,?,?,?);''', [instagram_id, key,int(values[0]),int(values[1]),int(values[2]),values[3],values[4],int(values[5])])
 
-        created_id = c.execute('SELECT MAX(id) FROM instagram_posts;').fetchall[0][0]
+        created_id = c.execute('SELECT MAX(id) FROM instagram_posts;').fetchall()[0][0]
         print(">> DB.INSTAGRAM.POSTS >> new row inserted >> ID:",created_id)
         return created_id
     except:
@@ -203,10 +311,83 @@ def insert_instagram_posts_data(c,instagram_id,data):
 
 
 
+def return_celeb_info(c, id):
+    ''' 
+    SELECT CELEBS info
+    RETURNS data if correct, else return False
+    '''
+    try:
+    #if True:
+        data = c.execute('''SELECT  firstname,
+                                    lastname,
+                                    instagram.followers,
+                                    instagram.posts,
+                                    instagram.following,
+                                    instagram.photo_url
+                            FROM celeb JOIN instagram ON
+                                    celeb.id=instagram.celeb_id
+                            WHERE celeb.id=?;''', id).fetchall()[0]
+        return data
+    except:
+        return False
+
+
+
+def return_instagram_posts_info(c, id):
+    '''  
+    SELECT all available instagram_posts info
+    RETURNS data if correct, else return False
+    ''' 
+    try:
+    #if True:
+        data = c.execute('''SELECT  *
+                            FROM instagram_posts
+                            JOIN instagram ON
+                            instagram_posts.instagram_id=instagram.id
+                            WHERE instagram.celeb_id=?;''', id).fetchall()
+        return data
+    except:
+        return False
 
 
 
 
+def get_twitter_data(c,celeb_id):
+    ''' 
+    Gets twitter data by Celeb ID
+    '''
+    try:
+        data = c.execute('''SELECT * FROM
+                         twitter WHERE celeb_id=?;''', celeb_id).fetchall()[0]
+        return data
+    except:
+        return False
+
+
+def insert_twitter_data(c,data):
+    ''' 
+    Inserts twitter info for a specified celeb ID
+    '''
+    try:
+        c.execute(
+            '''INSERT INTO twitter(
+            celeb_id,
+            url,
+            status,
+            tweets,
+            followers,
+            following,
+            likes,
+            photo_url,
+            lastupdate)
+            VALUES(
+            ?,?,?,?,?,?,?,?,?);''', data)
+
+        created_id = c.execute('SELECT MAX(id) FROM twitter;').fetchall()[0][0]
+        print(">> DB.TWITTER >> new row inserted >> ID:",created_id)
+        return created_id
+    except:
+        return False
 
 
 

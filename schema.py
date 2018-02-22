@@ -77,6 +77,21 @@ def create_db(filename):
                   post_img_url VARCHAR,
                   lastupdate   FLOAT);""")
 
+        c.execute(
+            """CREATE TABLE twitter(
+                  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                  celeb_id     INTEGER,
+                  url          VARCHAR,
+                  status       VARCHAR,
+                  tweets       INTEGER,
+                  followers    FLOAT,
+                  following    INTEGER,
+                  likes        INTEGER,
+                  photo_url    VARCHAR,
+                  lastupdate   FLOAT);""")
+
+
+
 
         # Commit & Close
         conn.commit()
@@ -133,7 +148,6 @@ def remove_dup_celeb(filename):
     except:
         print('Some error occured in function(remove_dup_celeb), call your programmer')
         print(traceback.format_exc())
-
 
 
 

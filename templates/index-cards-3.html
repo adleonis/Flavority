@@ -1,0 +1,100 @@
+{% extends "bootstrap/base.html"  %}
+{% block body %}
+
+<div class="container">
+  <div class="row align-items-end">
+    <div class="col-sm-4">
+        <h1 class="display-1">Flavority</h1>
+        <p class="h2">Top {{message}} Social Media Celebs by Followers</p>
+        </div>
+    <div class="col-md-auto"> 
+    <h1> --- </h1>
+    <form class="form-inline" action="/" method="post">
+      <div class="form-group mb-2">
+        <label for="staticEmail2" class="sr-only">Email</label>
+        <input type="text" readonly class="form-control-plaintext" id="staticEmail2" value="http://instagram.com/">
+      </div>
+      <div class="form-group mx-sm-3 mb-2">
+        <label for="searchinput" class="sr-only">Search Input</label>
+        <input type="text" name="searchfirstname" class="form-control" id="searchfirstname" placeholder="Firstname">
+        <input type="text" name="searchlastname" class="form-control" id="searchlastname" placeholder="Lastname">
+      </div>
+      <button type="submit" class="btn btn-primary mb-2">Search</button>
+    </form>
+    </div>
+  </div>
+  
+
+  <div class="row justify-content-center">
+    {% for values in data: %}
+    {% if loop.cycle('1','2','3','4') == '1': %}
+    <div class="row justify-content-center">
+    {% endif %}
+    <div class="col-sm-3">
+        <div class="card bg-light mb-3 border-dark" style="width: 28rem;">
+          <h4 class="card-header text-primary">{{loop.index}} {{values[1]}} {{values[2]}}</h4>
+          <div class="card-body">
+          <a href="/{{values[0]}}"><img class="card-img-top img-thumbnail" src="{{ values[14]}}" alt="Card image cap"></a>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+            <table class="table-sm-primary table-striped table-hover">
+              <thead>
+                <tr class="table-primary">
+                  <th scope="col">Network</th>
+                  <th scope="col" align="right">Followers</th>
+                  <th scope="col" align="right">|Posts</th>
+                  <th scope="col" align="right">|Following</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="table-primary">
+                  <th scope="row">Totals </th>
+                  <td align="right">{{(values[4]+values[10]) | BMk}}</td>
+                  <td align="right">{{(values[5]+values[11]) | BMk }}</td>
+                  <td align="right">{{(values[6]+values[12]) | BMk }}</td>
+                </tr>
+                <tr class="table-primary">
+                  <th scope="row">Instagram </th>
+                  <td align="right">{{values[4] | BMk}}</td>
+                  <td align="right">{{values[5] | BMk}}</td>
+                  <td align="right">{{values[6] | BMk}}</td>
+                </tr>
+                <tr class="table-primary">
+                  <th scope="row">Twitter </th>
+                  <td align="right">{{values[10] | BMk}}</td>
+                  <td align="right">{{values[11] | BMk}}</td>
+                  <td align="right">{{values[12] | BMk}}</td>
+                </tr>
+              </tbody>
+            </table>
+             <p class="card-text no-padding"><small class="text-muted">Last updated: {{ values[-2] | ctime }}</small></p>
+            </li>
+          </ul>
+        </div>
+    </div>
+    {% if loop.cycle('1','2','3','4') == '4': %}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
