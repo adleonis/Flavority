@@ -1,0 +1,465 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>dbloader &#8212; Flavority 1.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dbloader</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">DBLoader</span>
+<span class="sd">*****************************************************************************************************************</span>
+<span class="sd">Main routine to load names into DB from various sources </span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">scraper</span><span class="o">,</span> <span class="nn">orm</span>
+
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">datetime</span> 
+<span class="kn">import</span> <span class="nn">time</span>
+
+<div class="viewcode-block" id="load_wikipedia_names"><a class="viewcode-back" href="../doc_index.html#dbloader.load_wikipedia_names">[docs]</a><span class="k">def</span> <span class="nf">load_wikipedia_names</span><span class="p">(</span><span class="n">keywords</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Function which loads wikipedia names into DB</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">keyword</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="n">length</span><span class="p">)</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">get_wikipedia_names</span><span class="p">(</span><span class="n">keyword</span><span class="p">)</span>
+        <span class="nb">id</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">)</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">do_connect</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">names</span><span class="p">:</span>
+            <span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="c1">#add last updated as created_on (for frst time around)</span>
+            <span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">)</span> <span class="c1">#add last updated as created_on (for frst time around)</span>
+            <span class="n">current_id</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">insert_celeb_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="c1">#inserts data &amp; appends ID to list</span>
+            <span class="nb">id</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_id</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">orm</span><span class="o">.</span><span class="n">dis_connect</span><span class="p">((</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">))</span>
+        <span class="n">success</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="nb">id</span><span class="p">),</span><span class="n">length</span><span class="p">,</span> <span class="n">keyword</span><span class="p">])</span>    
+    
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;db_insert_log001.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">())</span><span class="o">+</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;##########################################################################</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">suc</span> <span class="ow">in</span> <span class="n">success</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> names out of </span><span class="si">{}</span><span class="s1"> were written from </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">suc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">suc</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">suc</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span></div>
+    
+
+<div class="viewcode-block" id="insert_instagram_info"><a class="viewcode-back" href="../doc_index.html#dbloader.insert_instagram_info">[docs]</a><span class="k">def</span> <span class="nf">insert_instagram_info</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Gets names from the DB, and tries to get instagram info for that name</span>
+<span class="sd">    start, end are the primary key IDs in the celeb table</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">upcounter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">)</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">do_connect</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1">#print(&#39;i:&#39;,i)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">select_celeb_data_by_id</span><span class="p">(</span><span class="n">c</span><span class="p">,[</span><span class="n">i</span><span class="p">])</span>
+        <span class="c1">#print(&#39;out:&#39;,out)</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>   <span class="c1">#ID exists in celeb table</span>
+            <span class="c1">#check if celeb already has been scraped</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">get_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,[</span><span class="n">i</span><span class="p">])</span>
+            <span class="c1">#print(&#39;temp:&#39;,temp)</span>
+            <span class="k">if</span> <span class="n">temp</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>  <span class="c1">#Celeb never been scraped</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.instagram.com/</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">scrape_result</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">get_instagram_data2</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                <span class="c1">#print(&#39;ScrapeResult:&#39;,scrape_result[-1])</span>
+                <span class="c1">#print(&#39;ScrapeResult:&#39;,scrape_result[-1])</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;u&#39;</span>
+    
+                <span class="k">if</span> <span class="n">scrape_result</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>     <span class="c1">#If scraping worked</span>
+                    <span class="k">if</span> <span class="n">scrape_result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>  <span class="c1">#if instagram marked as VERIFIED</span>
+                        <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>  <span class="c1"># u  = unverified</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+                    <span class="n">orm</span><span class="o">.</span><span class="n">insert_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>  <span class="c1">#insert into DB            </span>
+                    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Created Instagram info for&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>                        <span class="c1">#If scraping failed</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>            <span class="c1">#insert anyway so that </span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>          <span class="c1">#we don&#39;t scrape it over and over</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>  <span class="c1"># u=unverified  f=failed</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;None&#39;</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+                    <span class="n">orm</span><span class="o">.</span><span class="n">insert_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>  <span class="c1">#insert into DB</span>
+                    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Scraping failed for&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>                       <span class="c1">#already scraped, update fields</span>
+                <span class="n">updata</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.instagram.com/</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">scrape_result</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">get_instagram_data2</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ScrapeResult:&#39;</span><span class="p">,</span><span class="n">scrape_result</span><span class="p">)</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;u&#39;</span>
+                <span class="k">if</span> <span class="n">scrape_result</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>     <span class="c1">#If scraping worked</span>
+                    <span class="k">if</span> <span class="n">scrape_result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>  <span class="c1">#if instagram marked as VERIFIED</span>
+                        <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1">#instagram row ID</span>
+                    <span class="n">ins</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">update_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">updata</span><span class="p">)</span>  <span class="c1">#insert into DB</span>
+                    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="n">upcounter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Updated Instagram info for&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>                        <span class="c1">#If scraping failed</span>
+                    <span class="k">pass</span> <span class="c1">#don&#39;t update anything</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#ID not found in celeb table</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Unable to load name from DB&#39;</span><span class="p">)</span>
+        
+    <span class="n">orm</span><span class="o">.</span><span class="n">dis_connect</span><span class="p">((</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">counter</span><span class="p">,</span> <span class="n">upcounter</span></div>
+
+
+
+<div class="viewcode-block" id="insert_instagram_info2"><a class="viewcode-back" href="../doc_index.html#dbloader.insert_instagram_info2">[docs]</a><span class="k">def</span> <span class="nf">insert_instagram_info2</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Gets names from the DB, and tries to get instagram info for that name</span>
+<span class="sd">    also now gets the first few posts info and puts that into instagram_posts DB</span>
+<span class="sd">    start, end are the primary key IDs in the celeb table</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">upcounter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">)</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">do_connect</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">select_celeb_data_by_id</span><span class="p">(</span><span class="n">c</span><span class="p">,[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">out</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>   <span class="c1">#ID exists in celeb table</span>
+            <span class="c1">#check if celeb already has been scraped</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">get_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">temp</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>  <span class="c1">#Celeb never been scraped</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.instagram.com/</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="p">(</span><span class="n">scrape_result</span><span class="p">,</span><span class="n">posts_result</span><span class="p">)</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">get_instagram_data3</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;u&#39;</span>
+
+                <span class="k">if</span> <span class="n">scrape_result</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>     <span class="c1">#If scraping worked</span>
+                    <span class="k">if</span> <span class="n">scrape_result</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>  <span class="c1">#if instagram marked as VERIFIED</span>
+                        <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>  <span class="c1"># u  = unverified</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+                    <span class="n">instagram_id</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">insert_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>  <span class="c1">#insert into DB</span>
+                    <span class="n">orm</span><span class="o">.</span><span class="n">insert_instagram_posts_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">instagram_id</span><span class="p">,</span><span class="n">posts_results</span><span class="p">)</span>
+                    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Created Instagram info for&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>                        <span class="c1">#If scraping failed</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>            <span class="c1">#insert anyway so that</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>          <span class="c1">#we don&#39;t scrape it over and over</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>  <span class="c1"># u=unverified  f=failed</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;None&#39;</span><span class="p">)</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+                    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="n">orm</span><span class="o">.</span><span class="n">insert_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>  <span class="c1">#insert into DB</span>
+                    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Scraping failed for&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>                       <span class="c1">#already scraped, update fields</span>
+                <span class="n">updata</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.instagram.com/</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">scrape_result</span><span class="p">,</span><span class="n">posts_results</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">get_instagram_data3</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;u&#39;</span>
+                <span class="k">if</span> <span class="n">scrape_result</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>     <span class="c1">#If scraping worked</span>
+                    <span class="k">if</span> <span class="n">scrape_result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>  <span class="c1">#if instagram marked as VERIFIED</span>
+                        <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">5</span><span class="p">]))</span>
+                    <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1">#instagram row ID</span>
+                    <span class="n">passfail</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">update_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">updata</span><span class="p">)</span>  <span class="c1">#insert into DB</span>
+                    <span class="n">orm</span><span class="o">.</span><span class="n">insert_instagram_posts_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">updata</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">posts_results</span><span class="p">)</span>
+                    <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                    <span class="n">upcounter</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Updated Instagram info for&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">out</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>                        <span class="c1">#If scraping failed</span>
+                    <span class="k">pass</span> <span class="c1">#don&#39;t update anything</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#ID not found in celeb table</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Unable to load name from DB&#39;</span><span class="p">)</span>
+    <span class="n">orm</span><span class="o">.</span><span class="n">dis_connect</span><span class="p">((</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">counter</span><span class="p">,</span> <span class="n">upcounter</span></div>
+
+
+<div class="viewcode-block" id="get_and_insert_instagram_info_by_id"><a class="viewcode-back" href="../doc_index.html#dbloader.get_and_insert_instagram_info_by_id">[docs]</a><span class="k">def</span> <span class="nf">get_and_insert_instagram_info_by_id</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Takes a list of celebs and their data, scrapes instagram to update, and saves to DB</span>
+<span class="sd">    Data should be the output of orm.select_top_celeb_by_followers() or similar output</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">upcounter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">reset_counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">updata</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.instagram.com/</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">scrape_result</span><span class="p">,</span><span class="n">posts_results</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">get_instagram_data3</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;u&#39;</span>
+        <span class="k">if</span> <span class="n">scrape_result</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>     <span class="c1">#If scraping worked</span>
+            <span class="k">if</span> <span class="n">scrape_result</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>  <span class="c1">#if instagram marked as VERIFIED</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="s1">&#39;v&#39;</span>                    
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">5</span><span class="p">]))</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1">#instagram row ID</span>
+            <span class="n">passfail</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">update_all_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">updata</span><span class="p">)</span>  <span class="c1">#insert into DB</span>
+            <span class="n">orm</span><span class="o">.</span><span class="n">insert_instagram_posts_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">updata</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span><span class="n">posts_results</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="n">upcounter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Updated Instagram info for&#39;</span><span class="p">,</span><span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;ID:&#39;</span><span class="p">,</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>                        <span class="c1">#If scraping failed</span>
+            <span class="n">orm</span><span class="o">.</span><span class="n">reset_instagram_stats_by_id</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">reset_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">upcounter</span><span class="p">,</span> <span class="n">reset_counter</span></div>
+
+
+<div class="viewcode-block" id="update_instagram_slice"><a class="viewcode-back" href="../doc_index.html#dbloader.update_instagram_slice">[docs]</a><span class="k">def</span> <span class="nf">update_instagram_slice</span><span class="p">(</span><span class="n">from_celeb_rank</span><span class="p">,</span><span class="n">to_celeb_rank</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Updates the instagram info from the top of the list down ranked by # followers</span>
+<span class="sd">    Ex: to update the top 50 celebs, (0,49)</span>
+<span class="sd">        to update the next 50, (50,100)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">)</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">do_connect</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">select_top_celeb_by_followers</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">[</span><span class="n">to_celeb_rank</span><span class="p">])</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">get_and_insert_instagram_info_by_id</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="n">from_celeb_rank</span><span class="p">:])</span>
+    <span class="n">orm</span><span class="o">.</span><span class="n">dis_connect</span><span class="p">([</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Celebs updated:&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;Celebs reset:&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+
+
+
+<div class="viewcode-block" id="get_and_insert_twitter_info_by_id"><a class="viewcode-back" href="../doc_index.html#dbloader.get_and_insert_twitter_info_by_id">[docs]</a><span class="k">def</span> <span class="nf">get_and_insert_twitter_info_by_id</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Takes a list of celebs and their data, scrapes twitter to update, and saves to DB</span>
+<span class="sd">    Data should be the output of orm.select_top_celeb_by_followers() or similar output</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">upcounter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">reset_counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">updata</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://www.twitter.com/</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">scrape_result</span> <span class="o">=</span> <span class="n">scraper</span><span class="o">.</span><span class="n">get_twitter_data</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">scrape_result</span> <span class="o">!=</span> <span class="kc">False</span><span class="p">:</span>     <span class="c1">#If scraping worked</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scrape_result</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+            <span class="n">updata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">())</span>
+            <span class="n">passfail</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">insert_twitter_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">updata</span><span class="p">)</span>  <span class="c1">#insert into DB</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="n">upcounter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&gt;&gt; DBloader &gt;&gt; Inserted TWITTER info for&#39;</span><span class="p">,</span><span class="n">line</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">line</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="s1">&#39;ID:&#39;</span><span class="p">,</span><span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>                        <span class="c1">#If scraping failed</span>
+            <span class="c1">#orm.reset_instagram_stats_by_id(c,line[0])</span>
+            <span class="n">reset_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">upcounter</span><span class="p">,</span> <span class="n">reset_counter</span></div>
+
+
+<div class="viewcode-block" id="insert_twitter_slice"><a class="viewcode-back" href="../doc_index.html#dbloader.insert_twitter_slice">[docs]</a><span class="k">def</span> <span class="nf">insert_twitter_slice</span><span class="p">(</span><span class="n">from_celeb_rank</span><span class="p">,</span><span class="n">to_celeb_rank</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Updates the instagram info from the top of the list down ranked by # followers</span>
+<span class="sd">    Ex: to update the top 50 celebs, (0,49)</span>
+<span class="sd">        to update the next 50, (50,100)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">)</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">do_connect</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">orm</span><span class="o">.</span><span class="n">select_top_celeb_by_followers</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">[</span><span class="n">to_celeb_rank</span><span class="p">])</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">get_and_insert_twitter_info_by_id</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="n">from_celeb_rank</span><span class="p">:])</span>
+    <span class="n">orm</span><span class="o">.</span><span class="n">dis_connect</span><span class="p">([</span><span class="n">c</span><span class="p">,</span><span class="n">conn</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Celebs updated:&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;Celebs reset:&#39;</span><span class="p">,</span><span class="n">out</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+
+
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    
+    
+    <span class="c1">#input = [&#39;List_of_American_film_actresses&#39;,&#39;List_of_American_television_actresses&#39;]</span>
+    <span class="c1">#inputs = [&#39;List_of_Harper%27s_Bazaar_US_cover_models&#39;,\</span>
+    <span class="c1">#           &#39;List_of_Allure_cover_models&#39;,</span>
+    <span class="c1">#            &#39;List_of_Harper%27s_Bazaar_Brazil_cover_models&#39;,</span>
+    <span class="c1">#            &#39;List_of_Marie_Claire_cover_models&#39;,</span>
+    <span class="c1">#            &#39;List_of_Vogue_(US)_cover_models&#39;]</span>
+    
+    <span class="c1">#inputs = [&#39;Forbes_Celebrity_100&#39;,\</span>
+    <span class="c1">#            &#39;List_of_film_and_television_directors&#39;,\</span>
+    <span class="c1">#            &#39;List_of_female_film_and_television_directors&#39;,</span>
+    <span class="c1">#            &#39;The_World%27s_Billionaires&#39;,\</span>
+    <span class="c1">#            &#39;List_of_people_from_New_York_(state)&#39;,</span>
+    <span class="c1">#            &#39;List_of_people_from_Alabama&#39;]</span>
+    
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    inputs = [&#39;List_of_YouTubers&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Alaska&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Arizona&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Arkansas&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_California&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Colorado&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Connecticut&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Delaware&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Florida&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Georgia&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Hawaii&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Idaho&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Illinois&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Indiana&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Iowa&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Kansas&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Kentucky&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Lousiana&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Maine&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Maryland&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Massachusetts&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Michigan&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Minnesota&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Mississippi&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Missouri&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Montana&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Nebraska&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Nevada&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_New_Hampshire&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_New_Jersey&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_New_Mexico&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_North_Carolina&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_North_Dakota&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Ohio&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Oklahoma&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Oregon&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Pennsylvania&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Rhode_Island&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_South_Carolina&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_South_Dakota&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Tennessee&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Texas&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Utah&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Vermont&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Virginia&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Washington&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_West_Virginia&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Wisconsin&#39;,\</span>
+<span class="sd">              &#39;List_of_people_from_Wyoming&#39;]</span>
+<span class="sd">    &#39;&#39;&#39;</span> 
+
+    <span class="c1">#load_wikipedia_names(inputs)</span>
+    
+    <span class="c1">#b = insert_instagram_info2(10000,34237)</span>
+    <span class="c1">#b = insert_instagram_info(960,5295)</span>
+    <span class="c1">#print(b)</span>
+
+    <span class="c1">#</span>
+    <span class="n">update_instagram_slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">)</span>
+    <span class="c1">#insert_twitter_slice(1001,30000)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../doc_index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Stephane Gallet.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

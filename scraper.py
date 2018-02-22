@@ -4,6 +4,14 @@
 SCRAPER
 *****************************************************************************************************************
 Handles the background scraping of account info
+Each scpare function has been iteratively improved, just look for the one with the largest number 
+i.e. get_something3() is better than get_something2() 
+
+The strategy to get data has been:
+    1.  call get_wikipedia_names on a whole bunch of pages (see list at bottom of scraper, 
+        under if __name__='__main__'
+    2.  once these names are in DB, call schema.remove_dup_celeb() to remove duplicates
+    3.  with that subset, call get_instagram() & get_twitter() to get data every x minutes 
 
 '''
 

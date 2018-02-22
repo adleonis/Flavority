@@ -1,15 +1,18 @@
 #!usr/bin/env python3
 
-# Wrapper to handle I/O to from database
+''' 
+Wrapper to handle I/O to from database
+*********************************************************************************************
+REMEMBER TO OPEN A CURSOR FIRST TO PASS, THEN CLOSE
+ONLY THE CREATE DB function does that for you
 
-# REMEMBER TO OPEN A CURSOR FIRST TO PASS, THEN CLOSE
-# ONLY THE CREATE DB function does that for you
 
-# Functions Available
-#    io_wrapper.
-#             * do_connect()
-#             * dis_connect()
-#             * create_db(filename)
+Do [c,conn] = orm.do_connect() and orm.dis_connect([c,conn]) to save yourself some time anywhere
+TODO Extend this to various databases, so that you can select production, staging, graph DBs at will!
+
+
+
+''' 
 
 import traceback
 import sqlite3
@@ -20,6 +23,9 @@ import collections
 
 # CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 def do_connect():
+    ''' 
+    Create connection & cursor to the DB
+    '''
     database = 'toppdog-01.01.db'
     conn = sqlite3.connect(database, check_same_thread=False)
     out = (conn.cursor(), conn)
@@ -30,6 +36,10 @@ def do_connect():
 
 # DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD
 def dis_connect(inn):
+    ''' 
+    Close connection & cursor to the DB
+    REMEMBER TO DO conn.commit() wherever you need to in your code beforehand
+    '''
     try:
         conn = inn[1]
         c = inn[0]

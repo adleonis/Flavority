@@ -1,0 +1,390 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Welcome to Flavority’s documentation! &#8212; Flavority 1.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-flavority-s-documentation">
+<h1>Welcome to Flavority’s documentation!<a class="headerlink" href="#welcome-to-flavority-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-scraper"></span><div class="section" id="scraper">
+<h2>SCRAPER<a class="headerlink" href="#scraper" title="Permalink to this headline">¶</a></h2>
+<p>Handles the background scraping of account info
+Each scpare function has been iteratively improved, just look for the one with the largest number 
+i.e. get_something3() is better than get_something2()</p>
+<dl class="docutils">
+<dt>The strategy to get data has been:</dt>
+<dd><ol class="first last arabic simple">
+<li>call get_wikipedia_names on a whole bunch of pages (see list at bottom of scraper, 
+under if __name__=’__main__’</li>
+<li>once these names are in DB, call schema.remove_dup_celeb() to remove duplicates</li>
+<li>with that subset, call get_instagram() &amp; get_twitter() to get data every x minutes</li>
+</ol>
+</dd>
+</dl>
+<dl class="function">
+<dt id="scraper.get_instagram_data">
+<code class="descclassname">scraper.</code><code class="descname">get_instagram_data</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scraper.html#get_instagram_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scraper.get_instagram_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets instagram data from a name-based URL
+Returns [posts, followers, following, photo_url] if everything went well
+Return False if something failed</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scraper.get_instagram_data2">
+<code class="descclassname">scraper.</code><code class="descname">get_instagram_data2</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scraper.html#get_instagram_data2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scraper.get_instagram_data2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets instagram data from a name-based URL
+Returns [posts, followers, following, photo_url(HD),verifiedstatus] if everything went well
+Return False if something failed</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scraper.get_instagram_data3">
+<code class="descclassname">scraper.</code><code class="descname">get_instagram_data3</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scraper.html#get_instagram_data3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scraper.get_instagram_data3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets instagram data from a name-based URL
+Returns [posts, followers, following, photo_url(HD),verifiedstatus] if eve$
+Return False if something failed</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scraper.get_twitter_data">
+<code class="descclassname">scraper.</code><code class="descname">get_twitter_data</code><span class="sig-paren">(</span><em>url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scraper.html#get_twitter_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scraper.get_twitter_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets TWITTER data from a name-based URL
+Returns [posts, followers, following, photo_url(HD),verifiedstatus] if eve$
+Return False if something failed</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scraper.get_wikipedia_names">
+<code class="descclassname">scraper.</code><code class="descname">get_wikipedia_names</code><span class="sig-paren">(</span><em>keyword</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/scraper.html#get_wikipedia_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#scraper.get_wikipedia_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets [firstname, lastname, unixtime, sourceurl] from 
+a wikipedia input list page of names  
+try: keyword=’List_of_American_film_actresse’</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-orm"></span><div class="section" id="wrapper-to-handle-i-o-to-from-database">
+<h2>Wrapper to handle I/O to from database<a class="headerlink" href="#wrapper-to-handle-i-o-to-from-database" title="Permalink to this headline">¶</a></h2>
+<p>REMEMBER TO OPEN A CURSOR FIRST TO PASS, THEN CLOSE
+ONLY THE CREATE DB function does that for you</p>
+<p>Do [c,conn] = orm.do_connect() and orm.dis_connect([c,conn]) to save yourself some time anywhere
+TODO Extend this to various databases, so that you can select production, staging, graph DBs at will!</p>
+<dl class="function">
+<dt id="orm.dis_connect">
+<code class="descclassname">orm.</code><code class="descname">dis_connect</code><span class="sig-paren">(</span><em>inn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#dis_connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.dis_connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close connection &amp; cursor to the DB
+REMEMBER TO DO conn.commit() wherever you need to in your code beforehand</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.do_connect">
+<code class="descclassname">orm.</code><code class="descname">do_connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#do_connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.do_connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create connection &amp; cursor to the DB</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.get_instagram_data">
+<code class="descclassname">orm.</code><code class="descname">get_instagram_data</code><span class="sig-paren">(</span><em>c</em>, <em>celeb_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#get_instagram_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.get_instagram_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets instagram data by Celeb ID</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.get_twitter_data">
+<code class="descclassname">orm.</code><code class="descname">get_twitter_data</code><span class="sig-paren">(</span><em>c</em>, <em>celeb_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#get_twitter_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.get_twitter_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets twitter data by Celeb ID</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.insert_celeb_data">
+<code class="descclassname">orm.</code><code class="descname">insert_celeb_data</code><span class="sig-paren">(</span><em>c</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#insert_celeb_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.insert_celeb_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>INSERT DATA INTO TABLE CELEB
+data=[firstname,lastname,created_on,source,lastupdate,status]
+RETURNS created user ID if data correctly inserted, False if error</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.insert_instagram_data">
+<code class="descclassname">orm.</code><code class="descname">insert_instagram_data</code><span class="sig-paren">(</span><em>c</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#insert_instagram_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.insert_instagram_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts instagram info for a specified user ID</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.insert_instagram_posts_data">
+<code class="descclassname">orm.</code><code class="descname">insert_instagram_posts_data</code><span class="sig-paren">(</span><em>c</em>, <em>instagram_id</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#insert_instagram_posts_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.insert_instagram_posts_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts instagram post info for a specified instagram ID</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.insert_twitter_data">
+<code class="descclassname">orm.</code><code class="descname">insert_twitter_data</code><span class="sig-paren">(</span><em>c</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#insert_twitter_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.insert_twitter_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inserts twitter info for a specified celeb ID</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.reset_instagram_stats_by_id">
+<code class="descclassname">orm.</code><code class="descname">reset_instagram_stats_by_id</code><span class="sig-paren">(</span><em>c</em>, <em>id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#reset_instagram_stats_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.reset_instagram_stats_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset everything but the celeb ID</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.return_celeb_info">
+<code class="descclassname">orm.</code><code class="descname">return_celeb_info</code><span class="sig-paren">(</span><em>c</em>, <em>id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#return_celeb_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.return_celeb_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>SELECT CELEBS info
+RETURNS data if correct, else return False</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.return_instagram_posts_info">
+<code class="descclassname">orm.</code><code class="descname">return_instagram_posts_info</code><span class="sig-paren">(</span><em>c</em>, <em>id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#return_instagram_posts_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.return_instagram_posts_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>SELECT all available instagram_posts info
+RETURNS data if correct, else return False</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.select_celeb_data_by_id">
+<code class="descclassname">orm.</code><code class="descname">select_celeb_data_by_id</code><span class="sig-paren">(</span><em>c</em>, <em>id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#select_celeb_data_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.select_celeb_data_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>SELECT DATA FROM TABLE CELEB BY ID
+data=[id,firstname,lastname,created_on,source,lastupdate,status]
+RETURNS data if correct, else return False</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.select_celeb_data_by_name">
+<code class="descclassname">orm.</code><code class="descname">select_celeb_data_by_name</code><span class="sig-paren">(</span><em>c</em>, <em>firstname</em>, <em>lastname</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#select_celeb_data_by_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.select_celeb_data_by_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search for CELEB BY matching name
+data=[id,firstname,lastname,created_on,source,lastupdate,status]
+RETURNS data if found, else return False</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.select_top_celeb_by_followers">
+<code class="descclassname">orm.</code><code class="descname">select_top_celeb_by_followers</code><span class="sig-paren">(</span><em>c</em>, <em>num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#select_top_celeb_by_followers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.select_top_celeb_by_followers" title="Permalink to this definition">¶</a></dt>
+<dd><p>SELECT CELEBS with most Followers
+data=[id,firstname,lastname,created_on,source,lastupdate,status]
+RETURNS data if correct, else return False</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.select_top_celeb_by_followers2">
+<code class="descclassname">orm.</code><code class="descname">select_top_celeb_by_followers2</code><span class="sig-paren">(</span><em>c</em>, <em>num</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#select_top_celeb_by_followers2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.select_top_celeb_by_followers2" title="Permalink to this definition">¶</a></dt>
+<dd><p>SELECT CELEBS with most Followers INSTAGRAM+TWITTER
+data=[id,firstname,lastname,created_on,source,lastupdate,status]
+RETURNS data if correct, else return False</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.update_all_instagram_data">
+<code class="descclassname">orm.</code><code class="descname">update_all_instagram_data</code><span class="sig-paren">(</span><em>c</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#update_all_instagram_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.update_all_instagram_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates ALL instagram info for a specified user ID
+data = [url,status,posts,followers,following,photo_url,lastupdate, celeb_id]
+id is primary key from celeb table</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="orm.update_instagram_data">
+<code class="descclassname">orm.</code><code class="descname">update_instagram_data</code><span class="sig-paren">(</span><em>c</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/orm.html#update_instagram_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#orm.update_instagram_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates instagram info for a specified user ID
+data = [status,posts,followers,following,photo_url,lastupdate, celeb_id]
+id is primary key from celeb table</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-controller"></span><div class="section" id="controller">
+<h2>CONTROLLER<a class="headerlink" href="#controller" title="Permalink to this headline">¶</a></h2>
+<p>Main site Controller.  Uses flask to throw templates,</p>
+<dl class="function">
+<dt id="controller.dated_url_for">
+<code class="descclassname">controller.</code><code class="descname">dated_url_for</code><span class="sig-paren">(</span><em>endpoint</em>, <em>**values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/controller.html#dated_url_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#controller.dated_url_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>This code is by Eric Buckley from <a class="reference external" href="http://flask.pocoo.org/snippets/40/">http://flask.pocoo.org/snippets/40/</a>
+It updates your static files everytime the browser refreshes so styles are up to date, not busted by browser cache</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="controller.override_url_for">
+<code class="descclassname">controller.</code><code class="descname">override_url_for</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/controller.html#override_url_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#controller.override_url_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>This code is by Eric Buckley from <a class="reference external" href="http://flask.pocoo.org/snippets/40/">http://flask.pocoo.org/snippets/40/</a>
+It updates your static files everytime the browser refreshes so styles are up to date, not busted by browser cache</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="controller.ranked_list">
+<code class="descclassname">controller.</code><code class="descname">ranked_list</code><span class="sig-paren">(</span><em>celeb_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/controller.html#ranked_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#controller.ranked_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>..Show details of celeb in ranked list</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="controller.show_celeb_info">
+<code class="descclassname">controller.</code><code class="descname">show_celeb_info</code><span class="sig-paren">(</span><em>celeb_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/controller.html#show_celeb_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#controller.show_celeb_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>..Show details of celeb</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="controller.show_celebs">
+<code class="descclassname">controller.</code><code class="descname">show_celebs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/controller.html#show_celebs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#controller.show_celebs" title="Permalink to this definition">¶</a></dt>
+<dd><p>..Main website page, shows list of celebs</p>
+</dd></dl>
+
+</div>
+<span class="target" id="module-dbloader"></span><div class="section" id="dbloader">
+<h2>DBLoader<a class="headerlink" href="#dbloader" title="Permalink to this headline">¶</a></h2>
+<p>Main routine to load names into DB from various sources</p>
+<dl class="function">
+<dt id="dbloader.get_and_insert_instagram_info_by_id">
+<code class="descclassname">dbloader.</code><code class="descname">get_and_insert_instagram_info_by_id</code><span class="sig-paren">(</span><em>c</em>, <em>conn</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dbloader.html#get_and_insert_instagram_info_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dbloader.get_and_insert_instagram_info_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of celebs and their data, scrapes instagram to update, and saves to DB
+Data should be the output of orm.select_top_celeb_by_followers() or similar output</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dbloader.get_and_insert_twitter_info_by_id">
+<code class="descclassname">dbloader.</code><code class="descname">get_and_insert_twitter_info_by_id</code><span class="sig-paren">(</span><em>c</em>, <em>conn</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dbloader.html#get_and_insert_twitter_info_by_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dbloader.get_and_insert_twitter_info_by_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of celebs and their data, scrapes twitter to update, and saves to DB
+Data should be the output of orm.select_top_celeb_by_followers() or similar output</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dbloader.insert_instagram_info">
+<code class="descclassname">dbloader.</code><code class="descname">insert_instagram_info</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dbloader.html#insert_instagram_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dbloader.insert_instagram_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets names from the DB, and tries to get instagram info for that name
+start, end are the primary key IDs in the celeb table</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dbloader.insert_instagram_info2">
+<code class="descclassname">dbloader.</code><code class="descname">insert_instagram_info2</code><span class="sig-paren">(</span><em>start</em>, <em>end</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dbloader.html#insert_instagram_info2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dbloader.insert_instagram_info2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets names from the DB, and tries to get instagram info for that name
+also now gets the first few posts info and puts that into instagram_posts DB
+start, end are the primary key IDs in the celeb table</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dbloader.insert_twitter_slice">
+<code class="descclassname">dbloader.</code><code class="descname">insert_twitter_slice</code><span class="sig-paren">(</span><em>from_celeb_rank</em>, <em>to_celeb_rank</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dbloader.html#insert_twitter_slice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dbloader.insert_twitter_slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the instagram info from the top of the list down ranked by # followers
+Ex: to update the top 50 celebs, (0,49)</p>
+<blockquote>
+<div>to update the next 50, (50,100)</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="dbloader.load_wikipedia_names">
+<code class="descclassname">dbloader.</code><code class="descname">load_wikipedia_names</code><span class="sig-paren">(</span><em>keywords</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dbloader.html#load_wikipedia_names"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dbloader.load_wikipedia_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function which loads wikipedia names into DB</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dbloader.update_instagram_slice">
+<code class="descclassname">dbloader.</code><code class="descname">update_instagram_slice</code><span class="sig-paren">(</span><em>from_celeb_rank</em>, <em>to_celeb_rank</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dbloader.html#update_instagram_slice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dbloader.update_instagram_slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the instagram info from the top of the list down ranked by # followers
+Ex: to update the top 50 celebs, (0,49)</p>
+<blockquote>
+<div>to update the next 50, (50,100)</div></blockquote>
+</dd></dl>
+
+</div>
+<span class="target" id="module-schema"></span><div class="section" id="schema">
+<h2>SCHEMA<a class="headerlink" href="#schema" title="Permalink to this headline">¶</a></h2>
+<p>Main script to create DB</p>
+<dl class="function">
+<dt id="schema.create_db">
+<code class="descclassname">schema.</code><code class="descname">create_db</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/schema.html#create_db"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#schema.create_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main function to create the sqlite3 database</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="schema.remove_dup_celeb">
+<code class="descclassname">schema.</code><code class="descname">remove_dup_celeb</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/schema.html#remove_dup_celeb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#schema.remove_dup_celeb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes duplicate names in celeb table:
+where firstname &amp;&amp; lastname match</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Stephane Gallet.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/doc_index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

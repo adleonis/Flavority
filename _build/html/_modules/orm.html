@@ -1,0 +1,975 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>orm &#8212; Flavority 1.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for orm</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!usr/bin/env python3</span>
+
+<span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">Wrapper to handle I/O to from database</span>
+<span class="sd">*********************************************************************************************</span>
+<span class="sd">REMEMBER TO OPEN A CURSOR FIRST TO PASS, THEN CLOSE</span>
+<span class="sd">ONLY THE CREATE DB function does that for you</span>
+
+
+<span class="sd">Do [c,conn] = orm.do_connect() and orm.dis_connect([c,conn]) to save yourself some time anywhere</span>
+<span class="sd">TODO Extend this to various databases, so that you can select production, staging, graph DBs at will!</span>
+
+
+
+<span class="sd">&#39;&#39;&#39;</span> 
+
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+
+<span class="c1"># CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</span>
+<div class="viewcode-block" id="do_connect"><a class="viewcode-back" href="../doc_index.html#orm.do_connect">[docs]</a><span class="k">def</span> <span class="nf">do_connect</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Create connection &amp; cursor to the DB</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">database</span> <span class="o">=</span> <span class="s1">&#39;toppdog-01.01.db&#39;</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">database</span><span class="p">,</span> <span class="n">check_same_thread</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">(),</span> <span class="n">conn</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<span class="c1"># CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC</span>
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+<div class="viewcode-block" id="dis_connect"><a class="viewcode-back" href="../doc_index.html#orm.dis_connect">[docs]</a><span class="k">def</span> <span class="nf">dis_connect</span><span class="p">(</span><span class="n">inn</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Close connection &amp; cursor to the DB</span>
+<span class="sd">    REMEMBER TO DO conn.commit() wherever you need to in your code beforehand</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">inn</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">inn</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># conn.commit() ##remember this is off!!!</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+
+
+<div class="viewcode-block" id="insert_celeb_data"><a class="viewcode-back" href="../doc_index.html#orm.insert_celeb_data">[docs]</a><span class="k">def</span> <span class="nf">insert_celeb_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    INSERT DATA INTO TABLE CELEB</span>
+<span class="sd">    data=[firstname,lastname,created_on,source,lastupdate,status]</span>
+<span class="sd">    RETURNS created user ID if data correctly inserted, False if error</span>
+<span class="sd">    &#39;&#39;&#39;</span> 
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;INSERT INTO celeb(</span>
+<span class="sd">            firstname,</span>
+<span class="sd">            lastname,</span>
+<span class="sd">            created_on,</span>
+<span class="sd">            source,</span>
+<span class="sd">            lastupdate,</span>
+<span class="sd">            status</span>
+<span class="sd">            )</span>
+<span class="sd">            VALUES(</span>
+<span class="sd">            ?,</span>
+<span class="sd">            ?,</span>
+<span class="sd">            ?,</span>
+<span class="sd">            ?,</span>
+<span class="sd">            ?,</span>
+<span class="sd">            ?);&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">created_id</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT MAX(id) FROM celeb;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&gt; DB.CELEB &gt;&gt; new row inserted &gt;&gt; ID:&quot;</span><span class="p">,</span><span class="n">created_id</span><span class="p">)</span>         
+        <span class="k">return</span> <span class="n">created_id</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="reset_instagram_stats_by_id"><a class="viewcode-back" href="../doc_index.html#orm.reset_instagram_stats_by_id">[docs]</a><span class="k">def</span> <span class="nf">reset_instagram_stats_by_id</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Reset everything but the celeb ID</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+    <span class="c1">#if True:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;UPDATE instagram SET</span>
+<span class="s1">            url=&#39;&#39;,</span>
+<span class="s1">            status=&#39;u&#39;,</span>
+<span class="s1">            posts=0,</span>
+<span class="s1">            followers=0,</span>
+<span class="s1">            following=0,</span>
+<span class="s1">            photo_url=&#39;&#39;,</span>
+<span class="s1">            lastupdate=?,</span>
+<span class="s1">            insta_id=&#39;&#39;</span>
+<span class="s1">            WHERE celeb_id=?;&#39;&#39;&#39;</span><span class="p">,[</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">(),</span><span class="nb">id</span><span class="p">])</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&gt; DB.INSTAGRAM &gt;&gt; row reset &gt;&gt; CELEB ID:&quot;</span><span class="p">,</span><span class="nb">id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="select_celeb_data_by_id"><a class="viewcode-back" href="../doc_index.html#orm.select_celeb_data_by_id">[docs]</a><span class="k">def</span> <span class="nf">select_celeb_data_by_id</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    SELECT DATA FROM TABLE CELEB BY ID</span>
+<span class="sd">    data=[id,firstname,lastname,created_on,source,lastupdate,status]</span>
+<span class="sd">    RETURNS data if correct, else return False</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT * FROM </span>
+<span class="s1">                         celeb WHERE id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="select_celeb_data_by_name"><a class="viewcode-back" href="../doc_index.html#orm.select_celeb_data_by_name">[docs]</a><span class="k">def</span> <span class="nf">select_celeb_data_by_name</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">firstname</span><span class="p">,</span><span class="n">lastname</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Search for CELEB BY matching name</span>
+<span class="sd">    data=[id,firstname,lastname,created_on,source,lastupdate,status]</span>
+<span class="sd">    RETURNS data if found, else return False</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT * FROM</span>
+<span class="s1">                         celeb WHERE firstname=? AND lastname=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">firstname</span><span class="p">,</span><span class="n">lastname</span><span class="p">])</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+
+<div class="viewcode-block" id="get_instagram_data"><a class="viewcode-back" href="../doc_index.html#orm.get_instagram_data">[docs]</a><span class="k">def</span> <span class="nf">get_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">celeb_id</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Gets instagram data by Celeb ID</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT * FROM</span>
+<span class="s1">                         instagram WHERE celeb_id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">celeb_id</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="insert_instagram_data"><a class="viewcode-back" href="../doc_index.html#orm.insert_instagram_data">[docs]</a><span class="k">def</span> <span class="nf">insert_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Inserts instagram info for a specified user ID</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;INSERT INTO instagram(</span>
+<span class="sd">            celeb_id,</span>
+<span class="sd">            url,</span>
+<span class="sd">            status,</span>
+<span class="sd">            posts,</span>
+<span class="sd">            followers,</span>
+<span class="sd">            following,</span>
+<span class="sd">            photo_url,</span>
+<span class="sd">            lastupdate,</span>
+<span class="sd">            insta_id)</span>
+<span class="sd">            VALUES(</span>
+<span class="sd">            ?,?,?,?,?,?,?,?,?);&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">created_id</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT MAX(id) FROM instagram;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&gt; DB.INSTAGRAM &gt;&gt; new row inserted &gt;&gt; ID:&quot;</span><span class="p">,</span><span class="n">created_id</span><span class="p">)</span> 
+        <span class="k">return</span> <span class="n">created_id</span>
+    <span class="k">except</span><span class="p">:</span> 
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="update_instagram_data"><a class="viewcode-back" href="../doc_index.html#orm.update_instagram_data">[docs]</a><span class="k">def</span> <span class="nf">update_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Updates instagram info for a specified user ID</span>
+<span class="sd">    data = [status,posts,followers,following,photo_url,lastupdate, celeb_id]</span>
+<span class="sd">    id is primary key from celeb table</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#print(&#39;DATAIN:&#39;,data)</span>
+    <span class="k">try</span><span class="p">:</span>
+    <span class="c1">#if True:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;UPDATE instagram SET            status=?,</span>
+<span class="s1">            posts=?,</span>
+<span class="s1">            followers=?,</span>
+<span class="s1">            following=?,</span>
+<span class="s1">            photo_url=?,</span>
+<span class="s1">            lastupdate=?,</span>
+<span class="s1">            insta_id=?</span>
+<span class="s1">            WHERE celeb_id=?;&#39;&#39;&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&gt; DB.INSTAGRAM &gt;&gt; row updated &gt;&gt; CELEB ID:&quot;</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="update_all_instagram_data"><a class="viewcode-back" href="../doc_index.html#orm.update_all_instagram_data">[docs]</a><span class="k">def</span> <span class="nf">update_all_instagram_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Updates ALL instagram info for a specified user ID</span>
+<span class="sd">    data = [url,status,posts,followers,following,photo_url,lastupdate, celeb_id]</span>
+<span class="sd">    id is primary key from celeb table</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#print(&#39;DATAIN:&#39;,data)</span>
+    <span class="k">try</span><span class="p">:</span>
+    <span class="c1">#if True:b</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;UPDATE instagram SET</span>
+<span class="s1">            url=?,</span>
+<span class="s1">            status=?,</span>
+<span class="s1">            posts=?,</span>
+<span class="s1">            followers=?,</span>
+<span class="s1">            following=?,</span>
+<span class="s1">            photo_url=?,</span>
+<span class="s1">            lastupdate=?,</span>
+<span class="s1">            insta_id=?</span>
+<span class="s1">            WHERE celeb_id=?;&#39;&#39;&#39;</span><span class="p">,</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&gt; DB.INSTAGRAM &gt;&gt; row updated &gt;&gt; CELEB ID:&quot;</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+
+<div class="viewcode-block" id="select_top_celeb_by_followers"><a class="viewcode-back" href="../doc_index.html#orm.select_top_celeb_by_followers">[docs]</a><span class="k">def</span> <span class="nf">select_top_celeb_by_followers</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    SELECT CELEBS with most Followers</span>
+<span class="sd">    data=[id,firstname,lastname,created_on,source,lastupdate,status]</span>
+<span class="sd">    RETURNS data if correct, else return False</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT  celeb.id,</span>
+<span class="s1">                                    instagram.id,</span>
+<span class="s1">                                    firstname,</span>
+<span class="s1">                                    lastname,</span>
+<span class="s1">                                    instagram.followers,</span>
+<span class="s1">                                    instagram.posts,</span>
+<span class="s1">                                    instagram.following,</span>
+<span class="s1">                                    instagram.photo_url,</span>
+<span class="s1">                                    instagram.lastupdate</span>
+<span class="s1">                            FROM celeb JOIN instagram ON</span>
+<span class="s1">                                    celeb.id=instagram.celeb_id</span>
+<span class="s1">                            ORDER BY instagram.followers DESC LIMIT ?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="select_top_celeb_by_followers2"><a class="viewcode-back" href="../doc_index.html#orm.select_top_celeb_by_followers2">[docs]</a><span class="k">def</span> <span class="nf">select_top_celeb_by_followers2</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    SELECT CELEBS with most Followers INSTAGRAM+TWITTER</span>
+<span class="sd">    data=[id,firstname,lastname,created_on,source,lastupdate,status]</span>
+<span class="sd">    RETURNS data if correct, else return False</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT  celeb.id,</span>
+<span class="s1">                                    firstname,</span>
+<span class="s1">                                    lastname,</span>
+<span class="s1">                                    instagram.id,</span>
+<span class="s1">                                    instagram.followers,</span>
+<span class="s1">                                    instagram.posts,</span>
+<span class="s1">                                    instagram.following,</span>
+<span class="s1">                                    instagram.photo_url,</span>
+<span class="s1">                                    instagram.lastupdate,</span>
+<span class="s1">                                    twitter.id,</span>
+<span class="s1">                                    twitter.followers,</span>
+<span class="s1">                                    twitter.tweets,</span>
+<span class="s1">                                    twitter.following,</span>
+<span class="s1">                                    twitter.likes,</span>
+<span class="s1">                                    twitter.photo_url,</span>
+<span class="s1">                                    twitter.lastupdate,</span>
+<span class="s1">                                    instagram.followers+twitter.followers</span>
+<span class="s1">                            FROM celeb JOIN instagram ON</span>
+<span class="s1">                                    celeb.id=instagram.celeb_id</span>
+<span class="s1">                                       JOIN twitter ON</span>
+<span class="s1">                                    celeb.id=twitter.celeb_id</span>
+<span class="s1">                            GROUP BY celeb.id</span>
+<span class="s1">                            ORDER BY (instagram.followers + twitter.followers) DESC LIMIT ?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="insert_instagram_posts_data"><a class="viewcode-back" href="../doc_index.html#orm.insert_instagram_posts_data">[docs]</a><span class="k">def</span> <span class="nf">insert_instagram_posts_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">instagram_id</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Inserts instagram post info for a specified instagram ID</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+    <span class="c1">#if True:</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span><span class="n">values</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1">#print(key, values)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;INSERT INTO instagram_posts(</span>
+<span class="sd">            instagram_id,</span>
+<span class="sd">            user_insta_id,</span>
+<span class="sd">            post_date,</span>
+<span class="sd">            post_likes,</span>
+<span class="sd">            post_comments,</span>
+<span class="sd">            post_caption,</span>
+<span class="sd">            post_img_url,</span>
+<span class="sd">            lastupdate)</span>
+<span class="sd">            VALUES(</span>
+<span class="sd">            ?,?,?,?,?,?,?,?);&#39;&#39;&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">instagram_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span><span class="n">values</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="n">values</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="nb">int</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">5</span><span class="p">])])</span>
+
+        <span class="n">created_id</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT MAX(id) FROM instagram_posts;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&gt; DB.INSTAGRAM.POSTS &gt;&gt; new row inserted &gt;&gt; ID:&quot;</span><span class="p">,</span><span class="n">created_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">created_id</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+
+<div class="viewcode-block" id="return_celeb_info"><a class="viewcode-back" href="../doc_index.html#orm.return_celeb_info">[docs]</a><span class="k">def</span> <span class="nf">return_celeb_info</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    SELECT CELEBS info</span>
+<span class="sd">    RETURNS data if correct, else return False</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+    <span class="c1">#if True:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT  firstname,</span>
+<span class="s1">                                    lastname,</span>
+<span class="s1">                                    instagram.followers,</span>
+<span class="s1">                                    instagram.posts,</span>
+<span class="s1">                                    instagram.following,</span>
+<span class="s1">                                    instagram.photo_url</span>
+<span class="s1">                            FROM celeb JOIN instagram ON</span>
+<span class="s1">                                    celeb.id=instagram.celeb_id</span>
+<span class="s1">                            WHERE celeb.id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="return_instagram_posts_info"><a class="viewcode-back" href="../doc_index.html#orm.return_instagram_posts_info">[docs]</a><span class="k">def</span> <span class="nf">return_instagram_posts_info</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">id</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;  </span>
+<span class="sd">    SELECT all available instagram_posts info</span>
+<span class="sd">    RETURNS data if correct, else return False</span>
+<span class="sd">    &#39;&#39;&#39;</span> 
+    <span class="k">try</span><span class="p">:</span>
+    <span class="c1">#if True:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT  *</span>
+<span class="s1">                            FROM instagram_posts</span>
+<span class="s1">                            JOIN instagram ON</span>
+<span class="s1">                            instagram_posts.instagram_id=instagram.id</span>
+<span class="s1">                            WHERE instagram.celeb_id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+
+<div class="viewcode-block" id="get_twitter_data"><a class="viewcode-back" href="../doc_index.html#orm.get_twitter_data">[docs]</a><span class="k">def</span> <span class="nf">get_twitter_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">celeb_id</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Gets twitter data by Celeb ID</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT * FROM</span>
+<span class="s1">                         twitter WHERE celeb_id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">celeb_id</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="insert_twitter_data"><a class="viewcode-back" href="../doc_index.html#orm.insert_twitter_data">[docs]</a><span class="k">def</span> <span class="nf">insert_twitter_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Inserts twitter info for a specified celeb ID</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;INSERT INTO twitter(</span>
+<span class="sd">            celeb_id,</span>
+<span class="sd">            url,</span>
+<span class="sd">            status,</span>
+<span class="sd">            tweets,</span>
+<span class="sd">            followers,</span>
+<span class="sd">            following,</span>
+<span class="sd">            likes,</span>
+<span class="sd">            photo_url,</span>
+<span class="sd">            lastupdate)</span>
+<span class="sd">            VALUES(</span>
+<span class="sd">            ?,?,?,?,?,?,?,?,?);&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">created_id</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT MAX(id) FROM twitter;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&gt; DB.TWITTER &gt;&gt; new row inserted &gt;&gt; ID:&quot;</span><span class="p">,</span><span class="n">created_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">created_id</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="c1">###### OLD ########## PREVIOUS PROBLEM ############## DISREGARD #####</span>
+
+
+
+<span class="c1"># $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$</span>
+<span class="c1"># UPDATED</span>
+<span class="k">def</span> <span class="nf">insert_users_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># data=[balance, type, created_on]</span>
+    <span class="c1"># INSERT DATA INTO TABLES</span>
+    <span class="c1"># RETURNS created user ID if data correctly inserted, False if error</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;INSERT INTO users(</span>
+<span class="sd">            balance,</span>
+<span class="sd">            type,</span>
+<span class="sd">            created_on</span>
+<span class="sd">            )</span>
+<span class="sd">            VALUES(</span>
+<span class="sd">            ?,</span>
+<span class="sd">            ?,</span>
+<span class="sd">            ?</span>
+<span class="sd">            );&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">created_id</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT MAX(id) FROM users;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">created_id</span>
+    <span class="k">except</span><span class="p">:</span>  <span class="c1"># TODO since the except is sometimes used in the model to check if users</span>
+        <span class="c1"># already exist, catch various exceptions depending on code</span>
+        <span class="c1"># print(&#39;An error has occured trying to insert data into the Users table of the DB&#39;)</span>
+
+        <span class="c1"># print(traceback.format_exc())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$</span>
+
+
+<span class="c1"># $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$</span>
+<span class="c1"># NEW</span>
+<span class="k">def</span> <span class="nf">insert_secure_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># data=[user_id,pass,last_login]</span>
+    <span class="c1"># INSERT DATA INTO TABLES</span>
+    <span class="c1"># RETURNS created key ID from SECURE table if data correctly inserted, False if error</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;INSERT INTO secure(</span>
+<span class="sd">            user_id,</span>
+<span class="sd">            pass,</span>
+<span class="sd">            last_login</span>
+<span class="sd">            )</span>
+<span class="sd">            VALUES(</span>
+<span class="sd">            ?,</span>
+<span class="sd">            ?,</span>
+<span class="sd">            ?</span>
+<span class="sd">            );&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">created_id</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT MAX(id) FROM secure;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">created_id</span>
+    <span class="k">except</span><span class="p">:</span>  <span class="c1"># TODO since the except is sometimes used in the model to check if users</span>
+        <span class="c1"># already exist, catch various exceptions depending on code</span>
+        <span class="c1"># print(&#39;An error has occured trying to insert data into the Users table of the DB&#39;)</span>
+
+        <span class="c1"># print(traceback.format_exc())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$</span>
+
+
+<span class="c1"># SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS</span>
+<span class="c1"># NEW</span>
+<span class="k">def</span> <span class="nf">get_secure_hash_for_user</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ID</span><span class="p">):</span>
+    <span class="c1"># INPUT ID is of type list... [ID]  &lt;--- USER ID NOT SECURE TABLE ID</span>
+    <span class="c1"># Returns: hash as a type&lt;VARCHAR&gt;</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT pass FROM secure WHERE user_id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">ID</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">out</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;    LOG &gt;&gt;  ORM &gt;&gt; An error has occured trying to get data in the</span>
+<span class="s1">                SECURE table of the DB: get_secure_hash_for_user&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="c1"># print(traceback.format_exc())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS</span>
+
+
+<span class="c1"># %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+<span class="c1"># UPDATED</span>
+<span class="k">def</span> <span class="nf">insert_positions_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># data=[user_id, ticker, amount, shares]</span>
+    <span class="c1"># RETURNS newly created account ID if data correctly inserted, False if error</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;INSERT INTO positions(</span>
+<span class="sd">                user_id,</span>
+<span class="sd">                ticker,</span>
+<span class="sd">                amount,</span>
+<span class="sd">                shares</span>
+<span class="sd">                )</span>
+<span class="sd">                VALUES(</span>
+<span class="sd">                ?,</span>
+<span class="sd">                ?,</span>
+<span class="sd">                ?,</span>
+<span class="sd">                ?</span>
+<span class="sd">                );&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">created_id</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT MAX(id) FROM positions;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">created_id</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to insert data into the</span>
+<span class="s1">                Positions table of the DB&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="c1"># %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+
+
+<span class="c1"># TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT</span>
+<span class="c1"># NEW</span>
+<span class="k">def</span> <span class="nf">insert_transactions_data</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># data=[user_id,position_id,buy_flag,shares,share_price,tstamp]</span>
+    <span class="c1"># RETURNS newly created account ID if data correctly inserted, False if error</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;INSERT INTO trans(</span>
+<span class="sd">                user_id,</span>
+<span class="sd">                position_id,</span>
+<span class="sd">                buy_flag,</span>
+<span class="sd">                shares,</span>
+<span class="sd">                share_price,</span>
+<span class="sd">                ts</span>
+<span class="sd">                )</span>
+<span class="sd">                VALUES(</span>
+<span class="sd">                ?,</span>
+<span class="sd">                ?,</span>
+<span class="sd">                ?,</span>
+<span class="sd">                ?,</span>
+<span class="sd">                ?,</span>
+<span class="sd">                ?</span>
+<span class="sd">                );&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+        <span class="n">created_id</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT MAX(id) FROM trans;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">created_id</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to insert data into the</span>
+<span class="s1">                Trans table of the DB&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT</span>
+
+
+<span class="c1"># IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII</span>
+<span class="c1"># updated</span>
+<span class="k">def</span> <span class="nf">update_user_balance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># ID is the user id</span>
+    <span class="c1"># data = [balance, id] (type:list)</span>
+    <span class="c1"># RETURNS True if data correctly updated, False if error</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;UPDATE users SET</span>
+<span class="sd">            balance=?</span>
+<span class="sd">            WHERE</span>
+<span class="sd">            ID=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to update the balance in the</span>
+<span class="s1">                Users table of the DB&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII</span>
+
+<span class="c1"># UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU</span>
+<span class="c1"># NEW</span>
+<span class="k">def</span> <span class="nf">update_position</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># id is the table primary key  &lt;-----position ID</span>
+    <span class="c1"># data = [amount, shares, ticker]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;UPDATE positions SET</span>
+<span class="sd">            amount=?,</span>
+<span class="sd">            shares=?</span>
+<span class="sd">            WHERE</span>
+<span class="sd">            ticker=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    LOG &gt;&gt; ORM   &gt;&gt; Position Update OK&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to update data in the</span>
+<span class="s1">                Positions table of the DB, Position Ticker:&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU</span>
+
+
+<span class="c1"># SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS</span>
+<span class="c1"># UPDATED</span>
+<span class="k">def</span> <span class="nf">get_user_permission</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ID</span><span class="p">):</span>
+    <span class="c1"># INPUT ID is of type list... [ID]</span>
+    <span class="c1"># Returns: permission level as a type&lt;str&gt;</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT type FROM users WHERE id=?;&#39;</span><span class="p">,</span> <span class="n">ID</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="c1"># print(&quot;An error has occured trying to get data in the USERS table of the DB: get_user_permission&quot;)</span>
+        <span class="c1"># print(traceback.format_exc())</span>
+        <span class="n">dataout</span> <span class="o">=</span> <span class="s1">&#39;unacredited&#39;</span>
+        <span class="k">return</span> <span class="n">dataout</span>
+
+
+<span class="c1"># SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS</span>
+
+
+<span class="c1"># SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS</span>
+<span class="c1"># NEW - FLASK</span>
+<span class="k">def</span> <span class="nf">get_user_all</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ID</span><span class="p">):</span>
+    <span class="c1"># INPUT ID is of type list... [ID]</span>
+    <span class="c1"># Returns: all user info for instantiation</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;SELECT * FROM users WHERE id=?;&#39;</span><span class="p">,</span> <span class="n">ID</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="c1"># print(&quot;An error has occured trying to get data in the USERS table of the DB: get_user_p$</span>
+        <span class="c1"># print(traceback.format_exc())</span>
+        <span class="c1">#dataout = &#39;unacredited&#39;</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="c1"># SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS</span>
+
+
+<span class="c1"># SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS</span>
+<span class="c1"># updated</span>
+<span class="k">def</span> <span class="nf">get_user_balance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ID</span><span class="p">):</span>
+    <span class="c1"># INPUT ID is of type list... [ID]  &lt;--- ACCOUNT ID not USER ID</span>
+    <span class="c1"># Returns: balance as a type&lt;float&gt;</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT balance FROM users WHERE id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">ID</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                USERS table of the DB: get_user_balance&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS</span>
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+<span class="c1"># NEW</span>
+<span class="k">def</span> <span class="nf">get_positions</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ID</span><span class="p">):</span>
+    <span class="c1"># INPUT ID is of type list... [ID]  &lt;--- USER ID</span>
+    <span class="c1"># Returns: all open positions type&lt;[list]&gt;</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;SELECT ticker,shares,amount FROM positions WHERE user_id=? AND shares&gt;0 GROUP BY ticker ORDER BY ticker;&#39;&#39;&#39;</span><span class="p">,</span>
+            <span class="n">ID</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ans</span><span class="p">:</span>
+            <span class="n">positions</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">positions</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                POSITIONS table of the DB: get_positions&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+<span class="c1"># NEW</span>
+<span class="k">def</span> <span class="nf">get_position_id</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ticker</span><span class="p">):</span>
+    <span class="c1"># INPUT ticker is of type list... [ticker]  &lt;---  position ticker</span>
+    <span class="c1"># Returns: corresponding ID</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT id FROM positions WHERE ticker=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">ticker</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">ans</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                POSITIONS table of the DB: get_position_id&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+<span class="c1"># NEW</span>
+<span class="k">def</span> <span class="nf">get_position_id_foruser</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># INPUT ticker is of type list... [ticker]  &lt;---  position ticker</span>
+    <span class="c1"># user id is the user&#39;s id</span>
+    <span class="c1"># Returns: corresponding ID</span>
+    <span class="c1"># data = [ticker, userid]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT id FROM positions WHERE ticker=? AND user_id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">ans</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                POSITIONS table of the DB: get_position_id&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+
+
+<span class="c1"># TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT</span>
+<span class="c1"># NEW</span>
+<span class="k">def</span> <span class="nf">get_transactions</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ID</span><span class="p">):</span>
+    <span class="c1"># INPUT ID is of type list... [ID]  &lt;--- USER ID</span>
+    <span class="c1"># Returns: all user transactions type&lt;[list]&gt;</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;SELECT id,position_id,buy_flag,shares,share_price,ts FROM trans WHERE user_id=? AND shares&gt;0 ORDER BY ts;&#39;&#39;&#39;</span><span class="p">,</span>
+            <span class="n">ID</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">transactions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ans</span><span class="p">:</span>
+            <span class="n">transactions</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">5</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">transactions</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                TRANS table of the DB: get_transactions&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT</span>
+
+<span class="c1"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
+<span class="k">def</span> <span class="nf">get_all_users</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">permission_level</span><span class="p">):</span>
+    <span class="c1"># Permission level is of type list... [permission_level]  &lt;--- [&#39;Client&#39;] or [&#39;banker&#39;]</span>
+    <span class="c1"># Returns: all user IDs of Clients type&lt;[list]&gt;</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT id FROM users WHERE permission_level=? ORDER BY id;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">permission_level</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">accounts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ans</span><span class="p">:</span>
+            <span class="n">accounts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">accounts</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                USERS table of the DB: get_all_users&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@</span>
+
+
+<span class="c1"># TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT</span>
+<span class="c1"># NEW -- SUPER USER FUNC ONLY</span>
+<span class="k">def</span> <span class="nf">sup_get_user_stats</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+    <span class="c1"># Returns: all user positions type&lt;[list]&gt;</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT id,position_id,buy_flag,shares,share_price,ts</span>
+<span class="s1">                         FROM trans WHERE user_id=? AND shares&gt;0</span>
+<span class="s1">                         ORDER BY ts;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">ID</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">transactions</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ans</span><span class="p">:</span>
+            <span class="n">transactions</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">5</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">transactions</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                TRANS table of the DB: get_transactions&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT</span>
+
+<span class="c1"># TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT</span>
+<span class="c1"># NEW -- SUPER USER FUNC ONLY</span>
+<span class="k">def</span> <span class="nf">sup_get_pnl</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+    <span class="c1"># Returns: all users, held amount, balance amount, pnl&lt;[list]&gt;</span>
+    <span class="c1">#</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT * FROM sup_users_pnl</span>
+<span class="s1">                         ORDER BY pnl DESC;&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="n">transactions</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ans</span><span class="p">:</span>
+            <span class="n">transactions</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">i</span><span class="p">[</span><span class="mi">3</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="n">transactions</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                SUP_USERS_PNL VIEW of the DB: sup_get_pnl&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT</span>
+
+
+<span class="c1"># UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU</span>
+<span class="c1"># SUPER USER FUNC ONLY :  update AMOUNT row with new shareprice data</span>
+<span class="k">def</span> <span class="nf">sup_update_all_positions_amount</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># data = [amount, id]   &lt;--- ID is positions ID</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&#39;&#39;&#39;UPDATE positions SET</span>
+<span class="sd">            amount=?</span>
+<span class="sd">            WHERE</span>
+<span class="sd">            id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    LOG &gt;&gt; ORM   &gt;&gt; SUP &gt;&gt; Position Price Updated &gt;&gt; ID:&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to update data in the</span>
+<span class="s1">                Positions table of the DB, Position ID:&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU</span>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+<span class="c1"># SUPERUSER FUNC ONLY</span>
+<span class="k">def</span> <span class="nf">sup_get_position_info</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="c1"># data = [id]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT ticker,shares FROM positions WHERE id=?;&#39;&#39;&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">ans</span>
+        <span class="c1"># ans = (ticker, shares) tuple</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                POSITIONS table of the DB: sup_get_position_info&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+<span class="c1"># SUPERUSER FUNC ONLY</span>
+<span class="k">def</span> <span class="nf">sup_get_positions_tablesize</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+    <span class="c1"># data = [id]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">ans</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;SELECT COUNT (*) FROM positions;&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">ans</span>
+        <span class="c1"># ans = number of rows in positions table</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;An error has occured trying to get data in the</span>
+<span class="s1">                POSITIONS table of the DB: sup_get_positions_tablesize&#39;&#39;&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="c1"># DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s1">&#39;Running this will create a new DB called stock.db, if necessary remove any old files called stock.db beforehand, are you sure?(Y/N)&#39;</span><span class="p">)</span>
+    <span class="n">in_put</span> <span class="o">=</span> <span class="nb">input</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">in_put</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span>
+        <span class="c1"># print(&#39;Name your database file(with extension):&#39;)</span>
+        <span class="c1"># db_name = input()</span>
+        <span class="n">create_db</span><span class="p">(</span><span class="s1">&#39;stock.db&#39;</span><span class="p">)</span>
+        <span class="n">create_secure_table</span><span class="p">(</span><span class="s1">&#39;stock.db&#39;</span><span class="p">)</span>
+        <span class="n">dbviews</span><span class="o">.</span><span class="n">sup_users_balances</span><span class="p">()</span>
+        <span class="n">dbviews</span><span class="o">.</span><span class="n">sup_users_pnl</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Goodbye&#39;</span><span class="p">)</span>
+
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../doc_index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Stephane Gallet.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

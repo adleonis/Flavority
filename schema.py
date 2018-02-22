@@ -156,3 +156,4 @@ def remove_dup_celeb(filename):
 if __name__=='__main__':
     #create_db('toppdog-01.01.db')
     #remove_dup_celeb('toppdog-01.01.db')
+    pass

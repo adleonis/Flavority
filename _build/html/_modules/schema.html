@@ -1,0 +1,244 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>schema &#8212; Flavority 1.0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for schema</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!usr/bin/env python3</span>
+
+<span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">SCHEMA</span>
+<span class="sd">*********************************************************************************</span>
+<span class="sd">Main script to create DB</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">sqlite3</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="c1">########################################################</span>
+<div class="viewcode-block" id="create_db"><a class="viewcode-back" href="../doc_index.html#schema.create_db">[docs]</a><span class="k">def</span> <span class="nf">create_db</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Main function to create the sqlite3 database </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="kn">import</span> <span class="nn">sqlite3</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Open Connection</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+        <span class="c1"># CREATE TABLE</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;CREATE TABLE celeb(</span>
+<span class="sd">                  id           INTEGER PRIMARY KEY AUTOINCREMENT,</span>
+<span class="sd">                  firstname    VARCHAR,</span>
+<span class="sd">                  lastname     VARCHAR,</span>
+<span class="sd">                  created_on   INTEGER,</span>
+<span class="sd">                  source       VARCHAR,</span>
+<span class="sd">                  lastupdate   FLOAT,</span>
+<span class="sd">                  status       VARCHAR);&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;CREATE TABLE twitter(</span>
+<span class="sd">                  id           INTEGER PRIMARY KEY AUTOINCREMENT,</span>
+<span class="sd">                  celeb_id     INTEGER,</span>
+<span class="sd">                  url          VARCHAR,</span>
+<span class="sd">                  status       VARCHAR,</span>
+<span class="sd">                  followers    INTEGER,</span>
+<span class="sd">                  posts        INTEGER,</span>
+<span class="sd">                  lastupdate   FLOAT);&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;CREATE TABLE facebook(</span>
+<span class="sd">                  id           INTEGER PRIMARY KEY AUTOINCREMENT,</span>
+<span class="sd">                  celeb_id     INTEGER,</span>
+<span class="sd">                  url          VARCHAR,</span>
+<span class="sd">                  status       VARCHAR);&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;CREATE TABLE instagram(</span>
+<span class="sd">                  id           INTEGER PRIMARY KEY AUTOINCREMENT,</span>
+<span class="sd">                  celeb_id     INTEGER,</span>
+<span class="sd">                  url          VARCHAR,</span>
+<span class="sd">                  status       VARCHAR,</span>
+<span class="sd">                  posts        INTEGER,</span>
+<span class="sd">                  followers    FLOAT,</span>
+<span class="sd">                  following    INTEGER,</span>
+<span class="sd">                  photo_url    VARCHAR,</span>
+<span class="sd">                  lastupdate   FLOAT);&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;CREATE TABLE instagram_posts(</span>
+<span class="sd">                  id           INTEGER PRIMARY KEY AUTOINCREMENT,</span>
+<span class="sd">                  instagram_id INTEGER,</span>
+<span class="sd">                  user_insta_id INTEGER,</span>
+<span class="sd">                  post_date    INTEGER,</span>
+<span class="sd">                  post_likes   INTEGER,</span>
+<span class="sd">                  post_comments INTEGER,</span>
+<span class="sd">                  post_caption VARCHAR,</span>
+<span class="sd">                  post_img_url VARCHAR,</span>
+<span class="sd">                  lastupdate   FLOAT);&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;CREATE TABLE twitter(</span>
+<span class="sd">                  id           INTEGER PRIMARY KEY AUTOINCREMENT,</span>
+<span class="sd">                  celeb_id     INTEGER,</span>
+<span class="sd">                  url          VARCHAR,</span>
+<span class="sd">                  status       VARCHAR,</span>
+<span class="sd">                  tweets       INTEGER,</span>
+<span class="sd">                  followers    FLOAT,</span>
+<span class="sd">                  following    INTEGER,</span>
+<span class="sd">                  likes        INTEGER,</span>
+<span class="sd">                  photo_url    VARCHAR,</span>
+<span class="sd">                  lastupdate   FLOAT);&quot;&quot;&quot;</span><span class="p">)</span>
+
+
+
+
+        <span class="c1"># Commit &amp; Close</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    Database&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;was created successfuly&#39;</span><span class="p">)</span>
+
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Some error occured in function(create_db), call your programmer&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span></div>
+
+<span class="c1">#******************************************************************************</span>
+
+<div class="viewcode-block" id="remove_dup_celeb"><a class="viewcode-back" href="../doc_index.html#schema.remove_dup_celeb">[docs]</a><span class="k">def</span> <span class="nf">remove_dup_celeb</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">    Removes duplicate names in celeb table:</span>
+<span class="sd">    where firstname &amp;&amp; lastname match</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Open Connection</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+       
+        <span class="c1"># Get Table Count before removing anything</span>
+        <span class="n">pre_total</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;SELECT count(*) FROM celeb;&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+
+        <span class="c1"># DELETE DUPLICATES</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;DELETE FROM celeb</span>
+<span class="sd">               WHERE ID NOT IN</span>
+<span class="sd">               (</span>
+<span class="sd">               SELECT MIN(id)</span>
+<span class="sd">               FROM celeb</span>
+<span class="sd">               GROUP BY firstname,lastname</span>
+<span class="sd">               );&quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Commit</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        
+        <span class="c1"># Get Table count after removal</span>
+        <span class="n">post_total</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;SELECT count(*) FROM celeb;&quot;&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Close</span>
+        <span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="n">pre_total</span><span class="o">-</span><span class="n">post_total</span><span class="p">,</span> <span class="s1">&#39; duplicates removed&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">post_total</span><span class="p">,</span> <span class="s1">&#39; unique entries currently in DB&#39;</span><span class="p">)</span>
+
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Some error occured in function(remove_dup_celeb), call your programmer&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span></div>
+
+
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1">#create_db(&#39;toppdog-01.01.db&#39;)</span>
+    <span class="c1">#remove_dup_celeb(&#39;toppdog-01.01.db&#39;)</span>
+    <span class="k">pass</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../doc_index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Stephane Gallet.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.7</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
